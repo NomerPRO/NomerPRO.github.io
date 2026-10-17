@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NomerPRO • Генератор</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; font-family: 'Montserrat', sans-serif; }
+        body { background-color: #0b0d17; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; touch-action: manipulation; }
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0; }
+        .menu-btn { font-size: 24px; cursor: pointer; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .menu-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.1); }
+        .balance { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+        .balance span { color: #4caf50; }
+        .dropdown { position: absolute; top: 80px; left: 20px; background: rgba(26, 28, 41, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 8px; display: none; flex-direction: column; gap: 4px; z-index: 100; box-shadow: 0 20px 40px rgba(0,0,0,0.6); min-width: 200px; }
+        .dropdown.active { display: flex; }
+        .dropdown button { background: transparent; color: #b0b0b0; border: none; padding: 14px 16px; border-radius: 10px; text-align: left; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .dropdown button:active, .dropdown button:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .screen { display: none; padding: 0 20px; flex: 1; flex-direction: column; overflow: hidden; padding-bottom: 20px; }
+        .screen.active { display: flex; }
+        #screen-generator { justify-content: space-between; padding-top: 20px;}
+        .generator-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+        .generator-area:active { transform: scale(0.98); }
+        .gen-hint { color: #666; font-size: 14px; font-weight: 600; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; }
+        .result-box { text-align: center; width: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+        .result-box.active { display: flex; }
+        .phone-text { font-size: 28px; font-weight: 800; margin-bottom: 15px; color: #fff; letter-spacing: 0px; white-space: nowrap; width: 100%; text-align: center; display: block; }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(26, 28, 41, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 16px; border-radius: 20px; width: 100%; margin-bottom: 25px; transition: all 0.3s ease; }
+        .status-left { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+        .rarity-name { font-size: 14px; font-weight: 700; letter-spacing: 0.5px; }
+        .progress-bars { display: flex; gap: 4px; }
+        .bar { width: 16px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
+        .price-text { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
+        .text-common { color: #a0a5b5; } .text-common .bar.active { background: #a0a5b5; }
+        .text-rare { color: #4fc3f7; } .text-rare .bar.active { background: #4fc3f7; }
+        .text-epic { color: #ff79c6; } .text-epic .bar.active { background: #ff79c6; }
+        .text-legendary { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); } 
+        .text-legendary .bar.active { background: #ffd700; box-shadow: 0 0 5px #ffd700; }
+        .status-bar.text-legendary { border-color: rgba(255, 215, 0, 0.5); box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); animation: legendaryPulse 1.5s infinite; }
+        @keyframes legendaryPulse { 0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 0.4); } 50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); border-color: rgba(255, 215, 0, 0.8); } 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 0.4); } }
+        .country-switch { display: flex; gap: 10px; margin-top: 20px; background: rgba(255, 255, 255, 0.05); padding: 6px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); flex-shrink: 0; }
+        .country-btn { flex: 1; padding: 12px; border-radius: 12px; background: transparent; border: none; color: #888; font-weight: 700; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        .country-btn.active { background: #fff; color: #0b0d17; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2); }
+        .tab-title { font-size: 20px; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;}
+        .items-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
+        .item-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; cursor: pointer; }
+        .item-card.selected { border-color: #4fc3f7; background: rgba(79, 195, 247, 0.1); }
+        .item-card.legendary-card { border-color: rgba(255, 215, 0, 0.4); background: rgba(255, 215, 0, 0.05); }
+        .item-info { display: flex; flex-direction: column; gap: 4px; }
+        .item-phone { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap;}
+        .item-price { font-weight: 700; font-size: 15px; }
+        .card-actions { display: flex; gap: 8px; align-items: center;}
+        .btn-action { padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; transition: 0.1s; }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-sell { background: rgba(255, 152, 0, 0.1); color: #ff9800; border-color: rgba(255, 152, 0, 0.3); }
+        .btn-to-safe { background: rgba(37, 117, 252, 0.1); color: #4fc3f7; border-color: rgba(37, 117, 252, 0.3); }
+        .bottom-panel { flex-shrink: 0; padding-top: 15px; display: flex; gap: 10px; background-color: #0b0d17; flex-direction: column; }
+        .bottom-row { display: flex; gap: 10px; }
+        .btn-main { flex: 1; width: 100%; padding: 16px; border-radius: 16px; color: white; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.1s; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-select-all { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-sell-all { background: linear-gradient(135deg, #ff9800, #e68a00); }
+        .btn-to-safe { background: linear-gradient(135deg, #2575fc, #1e5ac9); }
+        .btn-safe-sell { background: linear-gradient(135deg, #ff9800, #e68a00); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-box { background: #1a1c29; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-icon { font-size: 40px; margin-bottom: 15px; }
+        .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; color: #fff; }
+        .modal-desc { font-size: 14px; color: #b0b0b0; margin-bottom: 25px; line-height: 1.4; }
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-modal { flex: 1; padding: 14px; border-radius: 14px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.1s; }
+        .btn-modal:active { transform: scale(0.95); }
+        .btn-cancel { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .btn-confirm { background: linear-gradient(135deg, #ff4b2b, #ff416c); color: #fff; box-shadow: 0 5px 15px rgba(255, 75, 43, 0.3); }
+        .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(26, 28, 41, 0.95); color: white; padding: 14px 28px; border-radius: 30px; font-size: 14px; z-index: 2000; opacity: 0; transition: 0.3s; pointer-events: none; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: 600; }
+        .toast.show { opacity: 1; bottom: 50px; }
+        .empty-state { text-align: center; color: #555; margin-top: 40px; font-size: 15px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <div class="modal-icon">⚠️</div>
+            <div class="modal-title">Вы уверены?</div>
+            <div class="modal-desc">Вы точно хотите продать все номера?</div>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="document.getElementById('confirmModal').classList.remove('active')">Отмена</button>
+                <button class="btn-modal btn-confirm" onclick="confirmSellAll()">Да, продать</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="header">
+        <div class="menu-btn" onclick="toggleMenu()">☰</div>
+        <div class="balance"><span id="balance">0 ₽</span></div>
+    </div>
+
+    <div class="dropdown" id="dropdown">
+        <button onclick="switchScreen('generator')">🎰 Генератор</button>
+        <button onclick="switchScreen('collection')">📦 Коллекция</button>
+        <button onclick="switchScreen('safe')">🔐 Сейф</button>
+    </div>
+
+    <div class="screen active" id="screen-generator">
+        <div class="generator-area" id="genArea">
+            <div class="gen-hint" id="genHint">Нажми, чтобы создать номер</div>
+            <div class="result-box" id="resultBox">
+                <div class="status-bar" id="statusBar">
+                    <div class="status-left">
+                        <div class="rarity-name" id="resultRarity">Обычный</div>
+                        <div class="progress-bars">
+                            <div class="bar" id="bar1"></div><div class="bar" id="bar2"></div><div class="bar" id="bar3"></div><div class="bar" id="bar4"></div>
+                        </div>
+                    </div>
+                    <div class="price-text" id="resultPrice">0 ₽</div>
+                </div>
+                <div class="phone-text" id="resultPhone"></div>
+            </div>
+        </div>
+        <div class="country-switch">
+            <button class="country-btn active" id="btn-by" onclick="setCountry('by')">🇧🇾 Беларусь</button>
+            <button class="country-btn" id="btn-ru" onclick="setCountry('ru')">🇷🇺 Россия</button>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-collection">
+        <div class="tab-title">📦 Моя Коллекция</div>
+        <div class="items-list" id="collectionList"></div>
+        <div class="bottom-panel">
+            <div class="bottom-row" id="selectionActions" style="display: none;">
+                <button class="btn-main btn-to-safe" id="btnSendToSafe" onclick="sendSelectedToSafe()">🔐 В сейф (0)</button>
+            </div>
+            <div class="bottom-row">
+                <button class="btn-main btn-select-all" id="btnSelectAll" onclick="toggleSelectAll()">☑️ Выбрать все</button>
+                <button class="btn-main btn-sell-all" onclick="openConfirmModal()">💰 Продать всё</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-safe">
+        <div class="tab-title">🔐 Мой Сейф</div>
+        <div class="items-list" id="safeList"></div>
+        <div class="bottom-panel">
+            <button class="btn-main btn-safe-sell" onclick="quickSellSafe()">⚡ Быстрая продажа</button>
+        </div>
+    </div>
+
+    <script>
+        let state = JSON.parse(localStorage.getItem('phoneGenPremium')) || { 
+            balance: 14585448, country: 'by', collection: [], safe: [] 
+        };
+        let selectedIds = []; 
+        let isSelectMode = false;
+
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, now);
+            filter.connect(audioCtx.destination);
+
+            if (type === 'common') {
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(300, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.connect(gain); gain.connect(filter); osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'rare') {
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.2);
+                gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.connect(gain); gain.connect(filter); osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'epic') {
+                const osc1 = audioCtx.createOscillator(); const osc2 = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc1.type = 'triangle'; osc2.type = 'sine';
+                osc1.frequency.setValueAtTime(200, now); osc1.frequency.exponentialRampToValueAtTime(500, now + 0.4);
+                osc2.frequency.setValueAtTime(400, now); osc2.frequency.exponentialRampToValueAtTime(800, now + 0.4);
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.2, now + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc1.connect(gain); osc2.connect(gain); gain.connect(filter); osc1.start(now); osc2.start(now); osc1.stop(now + 0.6); osc2.stop(now + 0.6);
+            } else if (type === 'legendary') {
+                const freqs = [261.63, 329.63, 392.00, 523.25];
+                freqs.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now + i*0.05);
+                    gain.gain.setValueAtTime(0, now + i*0.05); gain.gain.linearRampToValueAtTime(0.15, now + i*0.05 + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                    osc.connect(gain); gain.connect(filter); osc.start(now + i*0.05); osc.stop(now + 1.2);
+                });
+            }
+        }
+
+        const rarities = [
+            { id: 'common', name: 'Необычный', chance: 55, basePrice: 5000, range: 20000, textClass: 'text-common', bars: 1 },
+            { id: 'rare', name: 'Редкий', chance: 30, basePrice: 25000, range: 50000, textClass: 'text-rare', bars: 2 },
+            { id: 'epic', name: 'Эпический', chance: 12, basePrice: 75000, range: 150000, textClass: 'text-epic', bars: 3 },
+            { id: 'legendary', name: 'Легендарный', chance: 3, basePrice: 250000, range: 500000, textClass: 'text-legendary', bars: 4 }
+        ];
+
+        function getRandomRarity() {
+            const rand = Math.random() * 100; let sum = 0;
+            for (let r of rarities) { sum += r.chance; if (rand < sum) return r; }
+            return rarities[0]; 
+        }
+
+        function formatMoney(num) { return num.toLocaleString('ru-RU') + ' ₽'; }
+        function save() { localStorage.setItem('phoneGenPremium', JSON.stringify(state)); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1500); }
+        function updateUI() { document.getElementById('balance').textContent = formatMoney(state.balance); }
+
+        window.toggleMenu = function() { document.getElementById('dropdown').classList.toggle('active'); };
+        window.switchScreen = function(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            document.getElementById('dropdown').classList.remove('active');
+            isSelectMode = false; selectedIds = [];
+            if (screenId === 'collection') renderCollection();
+            if (screenId === 'safe') renderSafe();
+        }
+        window.setCountry = function(country) {
+            state.country = country;
+            document.getElementById('btn-by').classList.toggle('active', country === 'by');
+            document.getElementById('btn-ru').classList.toggle('active', country === 'ru');
+            save();
+        }
+
+        function generateNumber() {
+            initAudio();
+            let phoneStr = "";
+            if (state.country === 'ru') {
+                const code = [900, 910, 920, 950, 999][Math.floor(Math.random() * 5)];
+                phoneStr = `+7 (${code}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}-${Math.floor(Math.random() * 90) + 10}`;
+            } else {
+                const code = [25, 29, 33, 44][Math.floor(Math.random() * 4)];
+                phoneStr = `+375 (${code}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}-${Math.floor(Math.random() * 90) + 10}`;
+            }
+            const rarity = getRandomRarity();
+            const price = rarity.basePrice + Math.floor(Math.random() * rarity.range);
+            playSound(rarity.id);
+            const newRoll = { id: Date.now().toString() + Math.random(), phoneStr: phoneStr, price: price, rarityTextClass: rarity.textClass };
+            state.collection.push(newRoll);
+            save(); 
+            const phoneEl = document.getElementById('resultPhone');
+            const priceEl = document.getElementById('resultPrice');
+            const rarityEl = document.getElementById('resultRarity');
+            const statusBar = document.getElementById('statusBar');
+            document.getElementById('genHint').style.display = 'none';
+            statusBar.className = 'status-bar';
+            priceEl.className = 'price-text ' + rarity.textClass;
+            rarityEl.className = 'rarity-name ' + rarity.textClass;
+            if (rarity.id === 'legendary') statusBar.classList.add('text-legendary'); else statusBar.classList.add(rarity.textClass);
+            for(let i=1; i<=4; i++) { let bar = document.getElementById('bar'+i); bar.className = 'bar' + (i <= rarity.bars ? ' active' : ''); }
+            phoneEl.textContent = phoneStr;
+            priceEl.textContent = formatMoney(price);
+            rarityEl.textContent = rarity.name;
+            document.getElementById('resultBox').classList.add('active');
+        }
+
+        window.toggleSelect = function(id) {
+            if (!isSelectMode) isSelectMode = true;
+            const index = selectedIds.indexOf(id);
+            if (index !== -1) selectedIds.splice(index, 1); else selectedIds.push(id);
+            if (selectedIds.length === 0) isSelectMode = false;
+            renderCollection();
+        }
+
+        window.toggleSelectAll = function() {
+            if (selectedIds.length === state.collection.length && state.collection.length > 0) { selectedIds = []; isSelectMode = false; } 
+            else { selectedIds = state.collection.map(item => item.id); isSelectMode = true; }
+            renderCollection();
+        }
+
+        window.sendSelectedToSafe = function() {
+            if (selectedIds.length === 0) return;
+            const toKeep = state.collection.filter(item => !selectedIds.includes(item.id));
+            const toSafe = state.collection.filter(item => selectedIds.includes(item.id));
+            state.collection = toKeep; state.safe.push(...toSafe);
+            selectedIds = []; isSelectMode = false;
+            save(); renderCollection();
+            showToast(`🔐 ${toSafe.length} номеров в сейфе!`);
+        }
+
+        function renderCollection() {
+            const list = document.getElementById('collectionList');
+            const selectAllBtn = document.getElementById('btnSelectAll');
+            const selectionActions = document.getElementById('selectionActions');
+            const btnSendToSafe = document.getElementById('btnSendToSafe');
+
+            if (state.collection.length === 0) {
+                list.innerHTML = '<div class="empty-state">Коллекция пуста<br>Сгенерируйте первый номер!</div>';
+                selectAllBtn.style.display = 'none'; selectionActions.style.display = 'none';
+                return;
+            }
+            selectAllBtn.style.display = 'block';
+            if (selectedIds.length > 0) {
+                selectionActions.style.display = 'flex';
+                btnSendToSafe.textContent = `🔐 В сейф выбранные (${selectedIds.length})`;
+            } else { selectionActions.style.display = 'none'; }
+            if (selectedIds.length === state.collection.length) selectAllBtn.textContent = '❌ Снять выбор'; else selectAllBtn.textContent = '☑️ Выбрать все';
+
+            list.innerHTML = state.collection.map(item => {
+                const isSelected = selectedIds.includes(item.id);
+                const safeBtn = isSelectMode ? `<button class="btn-action btn-to-safe" onclick="event.stopPropagation(); toggleSelect('${item.id}')">В сейф</button>` : '';
+                const legendaryClass = item.rarityTextClass === 'text-legendary' ? 'legendary-card' : '';
+                return `
+                <div class="item-card ${isSelected ? 'selected' : ''} ${legendaryClass}" onclick="toggleSelect('${item.id}')">
+                    <div class="item-info" style="flex: 1;">
+                        <div class="item-phone">${item.phoneStr}</div>
+                        <div class="item-price ${item.rarityTextClass || ''}">${formatMoney(item.price)}</div>
+                    </div>
+                    <div class="card-actions">
+                        ${safeBtn}
+                        <button class="btn-action btn-sell" onclick="event.stopPropagation(); sellItem('${item.id}', 'collection')">💸</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderSafe() {
+            const list = document.getElementById('safeList');
+            if (state.safe.length === 0) { list.innerHTML = '<div class="empty-state">Сейф пуст<br>Отправляйте сюда лучшие номера!</div>'; return; }
+            list.innerHTML = state.safe.map(item => {
+                const legendaryClass = item.rarityTextClass === 'text-legendary' ? 'legendary-card' : '';
+                return `
+                <div class="item-card ${legendaryClass}" style="border-color: rgba(37, 117, 252, 0.3); background: rgba(37, 117, 252, 0.05);">
+                    <div class="item-info" style="flex: 1;">
+                        <div class="item-phone">${item.phoneStr}</div>
+                        <div class="item-price ${item.rarityTextClass || ''}">${formatMoney(item.price)}</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-sell" onclick="sellItem('${item.id}', 'safe')">💸 Продать</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        window.sellItem = function(id, type) {
+            initAudio();
+            let list = type === 'collection' ? state.collection : state.safe;
+            const index = list.findIndex(i => i.id === id);
+            if (index !== -1) {
+                state.balance += list[index].price;
+                list.splice(index, 1);
+                if(type === 'collection') { const selIndex = selectedIds.indexOf(id); if(selIndex !== -1) selectedIds.splice(selIndex, 1); }
+                save(); updateUI();
+                if (type === 'collection') renderCollection(); else renderSafe();
+                playSound('common');
+                showToast('💸 Продано!');
+            }
+        }
+
+        window.openConfirmModal = function() { if (state.collection.length === 0) return showToast('Коллекция пуста'); document.getElementById('confirmModal').classList.add('active'); }
+
+        window.confirmSellAll = function() {
+            document.getElementById('confirmModal').classList.remove('active');
+            let total = state.collection.reduce((sum, item) => sum + item.price, 0);
+            state.balance += total; 
+            state.collection = [];
+            selectedIds = []; isSelectMode = false;
+            save(); updateUI(); renderCollection();
+            showToast(`Всё продано за ${formatMoney(total)}!`);
+        }
+
+        window.quickSellSafe = function() {
+            if (state.safe.length === 0) return showToast('Сейф пуст');
+            let total = state.safe.reduce((sum, item) => sum + item.price, 0);
+            state.balance += total; 
+            state.safe = [];
+            save(); updateUI(); renderSafe();
+            showToast(`Сейф продан за ${formatMoney(total)}!`);
+        }
+
+        const genArea = document.getElementById('genArea');
+        genArea.addEventListener('click', () => { generateNumber(); });
+        genArea.addEventListener('touchstart', (e) => { e.preventDefault(); generateNumber(); }, {passive: false});
+
+        updateUI();
+        setCountry(state.country);
+    </script>
+</body>
+</html>
