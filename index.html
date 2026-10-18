@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>NomerPRO • Генератор</title>
+<link rel="apple-touch-icon" href="IMG_2478.jpeg">
+<link rel="icon" type="image/jpeg" href="IMG_2478.jpeg">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-family:'Montserrat',sans-serif}
@@ -142,7 +144,10 @@ body{background:#0b0d17;color:#fff;height:100vh;display:flex;flex-direction:colu
 </div>
 </div>
 <script>
-let state = { balance: 10000, country: 'by', collection: [], safe: [] };
+// Инициализация состояния с проверкой на сохранения
+let savedState = localStorage.getItem('phoneGenPremium');
+let state = savedState ? JSON.parse(savedState) : { balance: 10000, country: 'by', collection: [], safe: [] };
+
 let selectedIds = []; let isSelectMode = false; let audioCtx = null;
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
 function playSound(type) {
